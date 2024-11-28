@@ -11,7 +11,12 @@ class GameController extends Controller
     
     
     public function rollDice($id){
-        $user = User::findOrFail($id);
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found',
+            ], 404);}
         $diceOne = rand(1, 6);
         $diceTwo = rand(1, 6); 
         $win = $diceOne + $diceTwo == 7; 
