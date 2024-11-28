@@ -141,4 +141,69 @@ class GameTest extends TestCase
         $expectedRate = (3 / 4) * 100; // 3 ganados de 4 juegos
         $this->assertEquals($expectedRate, $user->success_rate);
     }
+    public function test_delete_games_for_player_successfully()
+    {
+        // Crear un usuario con juegos
+        $user = User::factory()->create();
+        Game::factory()->count(5)->create(['user_id' => $user->id]);
+
+        // Verificar que los juegos existen antes de la eliminación
+        $this->assertDatabaseCount('games', 5);
+
+        // Hacer la solicitud para eliminar los juegos
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $user->createToken('TestToken')->accessToken,
+        ])->deleteJson("/api/players/{$user->id}/games");
+
+        // Verificar que responde con éxito
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'message' => 'Tiradas eliminadas',
+                 ]);
+
+        // Verificar que los juegos fueron eliminados
+        $this->assertDatabaseCount('games', 0);
+
+        // Verificar que la tasa de éxito del usuario es 0
+        $user->refresh();
+        $this->assertEquals(0, $user->success_rate);
+    }
+
+    public function test_delete_games_for_nonexistent_player()
+    {
+        // ID de usuario inexistente
+        $nonexistentUserId = 999;
+
+        // Crear un usuario autenticado
+        $user = User::factory()->create();
+
+        // Hacer la solicitud para un usuario inexistente
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer ' . $user->createToken('TestToken')->accessToken,
+        ])->deleteJson("/api/players/{$nonexistentUserId}/games");
+
+        // Verificar que responde con 404
+        $response->assertStatus(404)
+        ->assertJson([
+            'status' => false,
+            'message' => 'User not found',
+        ]);
+    }
+
+    public function test_unauthenticated_user_cannot_delete_games()
+    {
+        // Crear un usuario con juegos
+        $user = User::factory()->create();
+        Game::factory()->count(5)->create(['user_id' => $user->id]);
+
+        // Hacer la solicitud sin autenticación
+        $response = $this->deleteJson("/api/players/{$user->id}/games");
+
+        // Verificar que responde con 401
+        $response->assertStatus(401)
+                 ->assertJson([
+                     'message' => 'Unauthenticated.',
+                 ]);
+    }
+
 }

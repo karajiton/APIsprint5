@@ -31,7 +31,12 @@ class GameController extends Controller
         return response()->json($game, 201);
     }
     public function deleteGames($id){
-        $user = User::findOrFail($id);
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found',
+            ], 404);}
         $user->games()->delete();
         $user->success_rate = 0; // Reiniciar porcentaje de éxito
         $user->save();
