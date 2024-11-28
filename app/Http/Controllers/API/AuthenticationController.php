@@ -83,32 +83,8 @@ class AuthenticationController extends Controller
             }
         }
     }
-
-    /** user info */
-    public function userInfo() 
-    {
-        try {
-            $userDataList = User::latest()->paginate(10);
-            $data = [];
-            $data['response_code']  = '200';
-            $data['status']         = 'success';
-            $data['message']        = 'success get user list';
-            $data['data_user_list'] = $userDataList;
-            return response()->json($data);
-        } catch(\Exception $e) {
-            Log::info($e);
-            $data = [];
-            $data['response_code']  = '400';
-            $data['status']         = 'error';
-            $data['message']        = 'fail get user list';
-            return response()->json($data);
-        }
-    }
     public function updateUser(Request $request, $id)
     {
-        
-     //Log::info('Solicitud recibida para actualizar usuario', ['request' => $request->all(), 'user_id' => $id]);
-     //$user = Auth::user();
 
         $userToUpdate = User::findOrFail($id);
         $authUser = $request->user();
