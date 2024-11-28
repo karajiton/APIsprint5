@@ -6,12 +6,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
 
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory,HasApiTokens,Notifiable;
+    use HasFactory,HasApiTokens,HasRoles,Notifiable;
     /**
      * The attributes that are mass assignable.
      *
@@ -19,7 +20,7 @@ class User extends Authenticatable
      */
     //protected function getDefaultGuardName(): string { return 'api'; }
    
-    //protected string $guard_name = 'api';
+    protected string $guard_name = 'api';
     
     protected $fillable = [
         'name',
