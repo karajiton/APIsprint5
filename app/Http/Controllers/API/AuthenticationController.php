@@ -86,10 +86,16 @@ class AuthenticationController extends Controller
     public function updateUser(Request $request, $id)
     {
 
-        $userToUpdate = User::findOrFail($id);
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found',
+            ], 404);}
+        
         $authUser = $request->user();
         
-       if ($authUser->id !== $userToUpdate->id) {
+       if ($authUser->id !== $user->id) {
             return response()->json([
                 'message' => "You cannot modify another user's name."
             ], 403);
@@ -105,7 +111,7 @@ class AuthenticationController extends Controller
 
         if($newName !== 'anónimo') {
             $existingUser = User::where('name', $newName)->first();
-            if ($existingUser && $existingUser->id !== $userToUpdate->id) {
+            if ($existingUser && $existingUser->id !== $user->id) {
                 return response()->json([
                     'message' => 'The name is already in use. Please choose another one.'
                 ], 400);
@@ -115,10 +121,12 @@ class AuthenticationController extends Controller
             ]);
         }
 
-        $userToUpdate->name = $newName;
-        $userToUpdate->save();
+        $user->name = $newName;
+        $user->save();
 
-        return response()->json(['message' => 'Player updated successfully', 'player' => $newName]);
+        return response()->json([
+            'status' => true,
+            'message' => 'Player updated successfully']);
     
     }
 }
