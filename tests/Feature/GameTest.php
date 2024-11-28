@@ -254,8 +254,30 @@ class GameTest extends TestCase
 
         $response->assertStatus(200);
 
-        // Verifica que los jugadores estén presentes en la respuesta
+        
         $response->assertJsonFragment(['email' => $player1->email]);
         $response->assertJsonFragment(['email' => $player2->email]);
     }
-}
+    public function test_no_user_in_database()
+    {
+        
+        $user = User::factory()->create();
+        $token = $user->createToken('TestToken')->accessToken;
+
+        $user->assignRole('admin');
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+        ->getJson('api/players/ranking');
+
+       
+        $response->assertStatus(404)
+                 ->assertJson([
+                     'status' => 'error',
+                     'message' => 'No players found.',
+                 ]);
+    }
+    
+
+    
+    }
+   

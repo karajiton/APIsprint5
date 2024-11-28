@@ -17,8 +17,9 @@ Route::middleware('auth:api')->group(function () {
 });
 
 Route::middleware('auth:api', 'role:admin')->group(function (){
-    Route::get('/players', [Gamecontroller::class, 'listPlayers']);
-    Route::get('/players/ranking', [Gamecontroller::class, 'ranking']);
-    Route::get('/players/ranking/loser', [Gamecontroller::class, 'worstPlayer']);
     Route::get('/players/ranking/winner', [Gamecontroller::class, 'bestPlayer']);
+    Route::get('/players/ranking', [Gamecontroller::class, 'ranking']);
+    Route::get('/players', [Gamecontroller::class, 'listPlayers']);
+    Route::get('/players/ranking/loser', [Gamecontroller::class, 'worstPlayer']);
+    
 });
