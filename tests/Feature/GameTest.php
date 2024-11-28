@@ -220,6 +220,42 @@ class GameTest extends TestCase
             'status' => false,
             'message' => 'User not found',
         ]);
+        
+    }
+    public function test_user_without_admin_role_cannot_access_players_list()
+    {
+        
+        $user = User::factory()->create();
+
+        $user = User::factory()->create();
+        $token = $user->createToken('TestToken')->accessToken;
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+                         ->getJson('api/players');
+
+       
+        $response->assertStatus(403);
     }
 
+    
+    public function test_admin_user_can_access_players_list()
+    {
+        // Crea un usuario con el rol 'admin'
+        $admin = User::factory()->create();
+        $token = $admin->createToken('TestToken')->accessToken;
+        $admin->assignRole('admin');
+
+        // Crea algunos jugadores para que aparezcan en la respuesta
+        $player1 = User::factory()->create();
+        $player2 = User::factory()->create();
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+        ->getJson('api/players');
+
+        $response->assertStatus(200);
+
+        // Verifica que los jugadores estén presentes en la respuesta
+        $response->assertJsonFragment(['email' => $player1->email]);
+        $response->assertJsonFragment(['email' => $player2->email]);
+    }
 }
