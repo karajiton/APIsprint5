@@ -47,7 +47,12 @@ class GameController extends Controller
         return User::all();
     }
     public function listGames($id){
-        $user = User::findOrFail($id);
+        $user = User::find($id);
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found',
+            ], 404);}
         return $user->games;
     }
     public function ranking(){
