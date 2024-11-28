@@ -86,7 +86,13 @@ class AuthenticationController extends Controller
     public function updateUser(Request $request, $id)
     {
 
-        $userToUpdate = User::findOrFail($id);
+        $userToUpdate = User::find($id);
+        if (!$userToUpdate) {
+            return response()->json([
+                'status' => false,
+                'message' => 'User not found',
+            ], 404);}
+        
         $authUser = $request->user();
         
        if ($authUser->id !== $userToUpdate->id) {
@@ -118,7 +124,9 @@ class AuthenticationController extends Controller
         $userToUpdate->name = $newName;
         $userToUpdate->save();
 
-        return response()->json(['message' => 'Player updated successfully', 'player' => $newName]);
+        return response()->json([
+            'status' => true,
+            'message' => 'Player updated successfully']);
     
     }
 }
