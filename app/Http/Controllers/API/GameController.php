@@ -10,13 +10,19 @@ class GameController extends Controller
 {
     
     
-    public function rollDice($id){
+    public function rollDice(Request $request,$id){
         $user = User::find($id);
         if (!$user) {
             return response()->json([
                 'status' => false,
                 'message' => 'User not found',
             ], 404);}
+         $authUser = $request->user();
+        if ($authUser->id !== $user->id) {
+            return response()->json([
+            'message' => "You cannot play another game."
+            ], 403);
+            } 
         $diceOne = rand(1, 6);
         $diceTwo = rand(1, 6); 
         $win = $diceOne + $diceTwo == 7; 
@@ -30,13 +36,19 @@ class GameController extends Controller
 
         return response()->json($game, 201);
     }
-    public function deleteGames($id){
+    public function deleteGames(Request $request,$id){
         $user = User::find($id);
         if (!$user) {
             return response()->json([
                 'status' => false,
                 'message' => 'User not found',
             ], 404);}
+        $authUser = $request->user();
+        if ($authUser->id !== $user->id) {
+            return response()->json([
+            'message' => "You can't delete another user's games"
+            ], 403);
+            } 
         $user->games()->delete();
         $user->success_rate = 0; // Reiniciar porcentaje de éxito
         $user->save();
