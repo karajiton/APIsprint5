@@ -258,22 +258,65 @@ class GameTest extends TestCase
         $response->assertJsonFragment(['email' => $player1->email]);
         $response->assertJsonFragment(['email' => $player2->email]);
     }
-    public function test_no_user_in_database()
+   
+    public function test_best_player_is_returned_successfully()
     {
-        
+        // Crear usuarios con diferentes tasas de éxito
+        $players = User::factory()->count(3)->create();
+        $players[0]->update(['success_rate' => 50]); // Jugador 1: 50%
+        $players[1]->update(['success_rate' => 90]); // Jugador 2: 90%
+        $players[2]->update(['success_rate' => 75]); // Jugador 3: 75%
+
         $user = User::factory()->create();
         $token = $user->createToken('TestToken')->accessToken;
 
         $user->assignRole('admin');
 
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-        ->getJson('api/players/ranking');
+                    ->getJson('/api/players/ranking/winner');
 
-       
-        $response->assertStatus(404)
+        // Verificar que la respuesta es exitosa
+        $response->assertStatus(200)
                  ->assertJson([
-                     'status' => 'error',
-                     'message' => 'No players found.',
+                     'status' => 'success',
+                     'message' => 'Best player found successfully.',
+                     'best_player' => $players[1]->name, 
+                 ]);
+    }
+    public function test_worst_player_is_returned_successfully()
+    {
+        // Crear usuarios con diferentes tasas de éxito
+        $players = User::factory()->count(3)->create();
+        $players[0]->update(['success_rate' => 0]); 
+        $players[1]->update(['success_rate' => 90]); 
+        $players[2]->update(['success_rate' => 75]); 
+
+        $user = User::factory()->create();
+        $token = $user->createToken('TestToken')->accessToken;
+
+        $user->assignRole('admin');
+
+        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+                    ->getJson('/api/players/ranking/loser');
+
+        // Verificar que la respuesta es exitosa
+        $response->assertStatus(200)
+                 ->assertJson([
+                     'status' => 'success',
+                     'message' => 'Worst player found successfully.',
+                     'worst_player' => 'Admin User', 
+                 ]);
+    }
+    
+    public function test_unauthenticated_user_cannot_access_ranking()
+    {
+        // Hacer la solicitud sin autenticación
+        $response = $this->getJson('/api/players/ranking');
+
+        // Verificar que responde con 401
+        $response->assertStatus(401)
+                 ->assertJson([
+                     'message' => 'Unauthenticated.',
                  ]);
     }
     
