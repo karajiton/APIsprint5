@@ -80,7 +80,7 @@ class GameController extends Controller
             return $user->games;
     }
     public function ranking(){
-        $players = User::has('games')->get();
+        $players = User::orderByDesc('success_rate')->get();
 
     if ($players->isEmpty()) {
         return response()->json([
@@ -89,28 +89,9 @@ class GameController extends Controller
         ], 404);
     }
 
-    $totalSuccessRate = 0;
-    $totalPlayers = $players->count();
-
-    foreach ($players as $player) {
-       
-        $gamesCount = $player->games->count();
-        $winsCount = $player->games->where('win', true)->count(); 
-        if ($gamesCount > 0) {
-           
-            $playerSuccessRate = ($winsCount / $gamesCount) * 100;
-        } else {
-            $playerSuccessRate = 0;
-        }
-         $totalSuccessRate += $playerSuccessRate;
-    }
-
-    $averageSuccessRate = $totalSuccessRate / $totalPlayers;
-
     return response()->json([
         'status' => 'success',
-        'message' => 'Ranking calculated successfully.',
-        'average_success_rate' => $averageSuccessRate,
+        'average_success_rate' => $players,
     ]);
     }
     public function worstPlayer(){
@@ -134,11 +115,12 @@ class GameController extends Controller
                 'status' => 'error',
                 'message' => 'No user found.',
             ], 404);
+        }
             $bestPlayer= User::orderByDesc('success_rate')->first();
         return response()->json([
             'status' => 'success',
-            'message' => 'Worst player found successfully.',
-            'worst_player' => $bestPlayer->name]);
+            'message' => 'Best player found successfully.',
+            'best_player' => $bestPlayer->name]);
+    
     }
-}
 }
