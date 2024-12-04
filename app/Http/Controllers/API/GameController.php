@@ -58,13 +58,19 @@ class GameController extends Controller
     public function listPlayers(){
         return User::all();
     }
-    public function listGames($id){
+    public function listGames(Request $request,$id){
         $user = User::find($id);
         if (!$user) {
             return response()->json([
                 'status' => false,
                 'message' => 'User not found',
             ], 404);}
+            $authUser = $request->user();
+            if ($authUser->id !== $user->id) {
+                return response()->json([
+                'message' => "You can't delete another user's games"
+                ], 403);
+                } 
             if ($user->games->isEmpty()) {
                 return response()->json([
                     'status' => false,
