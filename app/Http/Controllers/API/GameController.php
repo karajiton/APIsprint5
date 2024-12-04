@@ -68,7 +68,7 @@ class GameController extends Controller
             $authUser = $request->user();
             if ($authUser->id !== $user->id) {
                 return response()->json([
-                'message' => "You can't delete another user's games"
+                'message' => "You can't see another user's games"
                 ], 403);
                 } 
             if ($user->games->isEmpty()) {
